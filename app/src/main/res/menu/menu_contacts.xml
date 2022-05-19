@@ -1,5 +1,12 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     tools:context=".ContactsActivity">
 
+    <item
+        android:id="@+id/menuPlus"
+        android:icon="@android:drawable/btn_plus"
+        android:title="Item"
+        android:visible="true"
+        app:showAsAction="always" />
 </menu>

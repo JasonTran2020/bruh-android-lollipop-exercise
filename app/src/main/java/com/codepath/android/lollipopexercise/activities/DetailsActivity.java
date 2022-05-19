@@ -1,16 +1,26 @@
 package com.codepath.android.lollipopexercise.activities;
 
+import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.palette.graphics.Palette;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.target.CustomTarget;
+import com.bumptech.glide.request.transition.Transition;
 import com.codepath.android.lollipopexercise.R;
 import com.codepath.android.lollipopexercise.models.Contact;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 public class DetailsActivity extends AppCompatActivity {
     public static final String EXTRA_CONTACT = "EXTRA_CONTACT";
@@ -19,6 +29,7 @@ public class DetailsActivity extends AppCompatActivity {
     private TextView tvName;
     private TextView tvPhone;
     private View vPalette;
+    private FloatingActionButton fab;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -29,18 +40,54 @@ public class DetailsActivity extends AppCompatActivity {
         tvName = (TextView) findViewById(R.id.tvName);
         tvPhone = (TextView) findViewById(R.id.tvPhone);
         vPalette = findViewById(R.id.vPalette);
+        fab=findViewById(R.id.floatingActionButton);
 
         // Extract contact from bundle
         mContact = (Contact)getIntent().getExtras().getSerializable(EXTRA_CONTACT);
 
+
+        CustomTarget<Bitmap> target = new CustomTarget<Bitmap>() {
+            @Override
+            public void onResourceReady(@NonNull @org.jetbrains.annotations.NotNull Bitmap resource, @Nullable @org.jetbrains.annotations.Nullable Transition<? super Bitmap> transition) {
+                // TODO 1. Instruct Glide to load the bitmap into the `holder.ivProfile` profile image view
+                Glide.with(DetailsActivity.this).load(mContact.getThumbnailDrawable()).centerCrop().into(ivProfile);
+                // TODO 2. Use generate() method from the Palette API to get the vibrant color from the bitmap
+                // Set the result as the background color for `holder.vPalette` view containing the contact's name.
+
+                Palette palette = Palette.from(resource).generate();
+                Palette.Swatch vibrant = palette.getVibrantSwatch();
+                assert vibrant != null;
+                vPalette.setBackgroundColor(vibrant.getRgb());
+            }
+            @Override
+            public void onLoadCleared(@Nullable @org.jetbrains.annotations.Nullable Drawable placeholder) {
+
+            }
+        };
+
+        Glide.with(this).asBitmap().load(mContact.getThumbnailDrawable()).centerCrop().into(target);
         // Fill views with data
-        Glide.with(DetailsActivity.this).load(mContact.getThumbnailDrawable()).centerCrop().into(ivProfile);
+        //Glide.with(DetailsActivity.this).load(mContact.getThumbnailDrawable()).centerCrop().into(ivProfile);
         tvName.setText(mContact.getName());
         tvPhone.setText(mContact.getNumber());
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String uri = "tel:" + mContact.getNumber();
+                Intent intent = new Intent(Intent.ACTION_DIAL);
+                intent.setData(Uri.parse(uri));
+                startActivity(intent);
+            }
+        });
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                finishAfterTransition();
+                return true;
+        }
         return super.onOptionsItemSelected(item);
     }
 
